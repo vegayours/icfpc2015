@@ -1,5 +1,6 @@
 set(LIB_SRC
     common/board.cpp
+    common/unit.cpp
     emulator/load_board.cpp
     emulator/show_board.cpp
     emulator/load_units.cpp

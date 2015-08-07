@@ -7,6 +7,7 @@ include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
 
 set(SRC
     test_stub.cpp
+    rng_test.cpp
 )
 
 # unit tests

@@ -20,6 +20,6 @@ using TBoardState = folly::fbvector<folly::fbstring>;
 
 TBoardState CreateState(const NCommon::TBoard& board);
 
-void ShowBoard(TBoardState& state, const NCommon::TBoard& board, const NCommon::TUnit& unit);
+void ShowBoard(TBoardState& state, const NCommon::TBoard& board, const NCommon::TUnit* unit);
 
 }
