@@ -1,7 +1,5 @@
 #pragma once
 
-namespace NCommon {
-
 struct TCellPosition {
     int Column;
     int Row;
@@ -22,5 +20,3 @@ enum ECellState : char {
     Pivot = '*',
     PivotUnit = 'O'
 };
-
-}

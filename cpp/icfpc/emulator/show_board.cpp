@@ -4,9 +4,7 @@
 
 #include <cstdio>
 
-namespace NEmulator {
 using namespace folly;
-using namespace NCommon;
 
 TBoardState CreateState(const TBoard& board) {
     return TBoardState(board.GetHeight(), fbstring(2 * board.GetWidth() - 1, ' '));
@@ -38,6 +36,4 @@ void ShowBoard(TBoardState& state, const TBoard& board, const TUnit* unit) {
             printf(" ");
         printf("%s\n", state[rowIndex].c_str());
     }
-}
-
 }

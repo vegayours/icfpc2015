@@ -1,10 +1,7 @@
 #include "load_units.h"
 
 
-namespace NEmulator {
-
 using namespace folly;
-using namespace NCommon;
 
 fbvector<TUnit> LoadUnits(dynamic problem) {
     dynamic unitsJson = problem["units"];
@@ -20,6 +17,4 @@ fbvector<TUnit> LoadUnits(dynamic problem) {
         units.emplace_back(std::move(members), TCellPosition(pivot["x"].asInt(), pivot["y"].asInt()));
     }
     return std::move(units);
-}
-
 }

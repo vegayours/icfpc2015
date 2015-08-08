@@ -2,8 +2,6 @@
 
 #include <stdint.h>
 
-namespace NCommon {
-
 class TRndGen {
 public:
     TRndGen(uint32_t seed)
@@ -32,5 +30,3 @@ private:
     uint32_t Multiplier;
     uint32_t Increment;
 };
-
-}

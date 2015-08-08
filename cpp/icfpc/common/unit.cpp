@@ -1,7 +1,5 @@
 #include "unit.h"
 
-namespace NCommon {
-
 TUnit::TUnit()
     : Cells()
     , Pivot()
@@ -74,5 +72,4 @@ TUnit TUnit::MoveUnit(std::function<void(TCellPosition& pos)> move) const {
     }
     move(copy.Pivot);
     return std::move(copy);
-}
 }

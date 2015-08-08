@@ -8,8 +8,6 @@
 #include <folly/FBVector.h>
 
 
-namespace NCommon {
-
 struct TCell {
     ECellState State;
     TCell(ECellState state = Empty)
@@ -44,5 +42,3 @@ private:
     int Height;
     TCellData Cells;
 };
-
-} // namespace NCommon

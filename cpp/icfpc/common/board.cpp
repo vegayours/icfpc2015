@@ -1,7 +1,5 @@
 #include "board.h"
 
-namespace NCommon {
-
 TBoard::TBoard(int width, int height, const folly::fbvector<TCellPosition>& filled)
     : Width(width)
       , Height(height)
@@ -29,6 +27,4 @@ void TBoard::LockUnit(const TUnit& unit) {
     for (const auto& pos : unit.GetCells()) {
         Cells[pos.Row][pos.Column].State = ECellState::Filled;
     }
-}
-
 }

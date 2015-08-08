@@ -8,8 +8,6 @@
 #include <algorithm>
 #include <functional>
 
-namespace NCommon {
-
 class TBoard;
 
 class TUnit {
@@ -51,4 +49,3 @@ private:
     int Height;
 };
 
-};

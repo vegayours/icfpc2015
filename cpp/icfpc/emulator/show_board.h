@@ -6,20 +6,16 @@
 #include <folly/FBString.h>
 #include <folly/FBVector.h>
 
-namespace NEmulator {
-
 enum ECellView : char {
-    Empty = '.',
-    Filled = '#',
-    Unit = 'o',
-    Pivot = '*',
-    PivotUnit = 'O'
+    CV_Empty = '.',
+    CV_Filled = '#',
+    CV_Unit = 'o',
+    CV_Pivot = '*',
+    CV_PivotUnit = 'O'
 };
 
 using TBoardState = folly::fbvector<folly::fbstring>;
 
-TBoardState CreateState(const NCommon::TBoard& board);
+TBoardState CreateState(const TBoard& board);
 
-void ShowBoard(TBoardState& state, const NCommon::TBoard& board, const NCommon::TUnit* unit);
-
-}
+void ShowBoard(TBoardState& state, const TBoard& board, const TUnit* unit);
