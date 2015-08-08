@@ -22,10 +22,12 @@ void ShowBoard(TBoardState& state, const TBoard& board, const TUnit* unit) {
         for (const auto& pos: unit->GetCells()) {
             state[pos.Row][2 * pos.Column] = ECellState::Unit;
         }
+        /*
         const auto& pivot = unit->GetPivot();
         state[pivot.Row][2 * pivot.Column] = (state[pivot.Row][2 * pivot.Column] == ECellState::Unit)
             ? ECellState::PivotUnit
             : ECellState::Pivot;
+        */
     }
 
     fbstring head(2 * board.GetWidth() - 1, '=');
