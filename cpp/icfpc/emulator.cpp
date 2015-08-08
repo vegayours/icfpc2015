@@ -1,5 +1,6 @@
 #include "common/unit.h"
 #include "common/rnd_gen.h"
+#include "game/stupid.h"
 
 #include "emulator/load_board.h"
 #include "emulator/show_board.h"
@@ -10,6 +11,9 @@
 #include <folly/json.h>
 
 #include <cstdio>
+#include <cstdlib>
+#include <thread>
+#include <chrono>
 
 using namespace folly;
 
@@ -40,16 +44,20 @@ private:
     fbvector<NCommon::TUnit> Units;
 };
 
-void RunBoard(NCommon::TBoard board, TUnitStream& stream) {
+fbstring RunBoard(NCommon::TBoard board, TUnitStream& stream) {
     auto state = NEmulator::CreateState(board);
     NCommon::TUnit unit, next;
     stream.Next(unit);
     unit = unit.PlaceToBoard(board);
     NEmulator::ShowBoard(state, board, &unit);
-    int c;
-    fbstring commands;
+    NGame::TStupidSolver solver(board, true);
+    fbstring commands, resultCommands;
     bool hasCommand = false;
-    while ((c = getchar()) != '/') {
+    std::queue<NGame::EMove> moves = solver.MovesForUnit(unit);
+
+    while (!moves.empty()) {
+        int c = moves.front();
+        moves.pop();
         hasCommand = false;
         switch (c) {
             case '\n':
@@ -84,28 +92,32 @@ void RunBoard(NCommon::TBoard board, TUnitStream& stream) {
         if (!board.IsValidUnit(next)) {
             fprintf(stderr, "Invalid move, will lock now, unit commands: '%s'!\n", commands.c_str());
             board.LockUnit(unit);
+            resultCommands.append(commands);
             commands.clear();
             if (!stream.Next(unit)) {
                 fprintf(stderr, "Unit stream end, final board:\n");
                 NEmulator::ShowBoard(state, board, nullptr);
-                return;
+                return std::move(resultCommands);
             }
+            moves = solver.MovesForUnit(unit);
             unit = unit.PlaceToBoard(board);
             if (!board.IsValidUnit(unit)) {
                 fprintf(stderr, "Unable to place next unit, game will end!\n");
-                return;
+                return std::move(resultCommands);
             }
         }
         else {
             unit = std::move(next);
         }
         NEmulator::ShowBoard(state, board, &unit);
+        //std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+    return "";
 }
 
 int main(int argc, const char** argv) {
-    if (argc < 2) {
-        fprintf(stderr, "Need more arguments: ./emulator problem.json\n");
+    if (argc < 4) {
+        fprintf(stderr, "Need more arguments: ./emulator problem.json id out.json\n");
         return 1;
     }
     fbstring json;
@@ -115,8 +127,20 @@ int main(int argc, const char** argv) {
     auto board = NEmulator::ParseBoard(problem);
     auto units = NEmulator::LoadUnits(problem);
     uint32_t limit = problem["sourceLength"].asInt();
-    uint32_t seed = problem["sourceSeeds"][0].asInt();
-    TUnitStream stream(seed, limit, std::move(units));
-    RunBoard(board, stream);
+    TUnitStream stream(0, 0, std::move(units));
+    dynamic result = {};
+    for (auto& seed : problem["sourceSeeds"]) {
+        stream.Reset(seed.asInt(), limit);
+        auto commands = RunBoard(board, stream);
+        assert(!commands.empty());
+        dynamic solution = dynamic::object()
+            ("problemId", to<int>(argv[2]))
+            ("seed", seed)
+            ("tag", "stupid")
+            ("solution", commands);
+        result.push_back(solution);
+    }
+    fbstring outJson = toPrettyJson(result);
+    writeFile(outJson, argv[3]);
     return 0;
 }
