@@ -1,13 +1,15 @@
 #include "board.h"
 
-TBoard::TBoard(int width, int height, const folly::fbvector<TCellPosition>& filled)
+#include <cassert>
+
+TBoard::TBoard(int width, int height, const folly::fbvector<TCellPos>& filled)
     : Width(width)
     , Height(height)
-    , Cells(height, folly::fbvector<TCell>(width))
+    , Cells(height, folly::fbvector<bool>(width, false))
     , FilledInRow(height, 0)
 {
     for (const auto& pos : filled) {
-        Cells[pos.Row][pos.Column].State = Filled;
+        Cells[pos.Row][pos.Col] = true;
         FilledInRow[pos.Row]++;
     }
     RemoveFilled();
@@ -19,38 +21,47 @@ TBoard::~TBoard()
 
 void TBoard::RemoveFilled() {
     int filledCnt = 0;
-    auto cellsIt = Cells.begin();
-    auto filledIt = FilledInRow.begin();
-    for (;filledIt != FilledInRow.end();) {
-        if (*filledIt == Width) {
-            cellsIt = Cells.erase(cellsIt);
-            filledIt = FilledInRow.erase(filledIt);
+    for (int row = Height - 1; row >= filledCnt;) {
+        if (FilledInRow[row] == Width) {
+            ShiftRow(row);
             filledCnt++;
         }
         else {
-            cellsIt++;
-            filledIt++;
+            row--;
         }
     }
-    while (filledCnt--) {
-        Cells.insert(Cells.begin(), folly::fbvector<TCell>(Width, Empty));
-        FilledInRow.insert(FilledInRow.begin(), 0);
+    for (int row = 0; row < filledCnt; row++) {
+        for (int col = 0; col < Width; col++) {
+            Cells[row][col] = false;
+        }
+        FilledInRow[row] = 0;
     }
 }
 
+void TBoard::ShiftRow(int row) {
+    for (int i = row; i > 0; i--) {
+        for (int j = 0; j < Width; j++) {
+            Cells[i][j] = Cells[i - 1][j];
+        }
+        FilledInRow[i] = FilledInRow[i-1];
+    }
+}
+
+
 bool TBoard::IsValidUnit(const TUnit& unit) const {
-    for (const auto& pos : unit.GetCells()) {
-        if (pos.Row < 0 || pos.Row >= Height || pos.Column < 0 || pos.Column >= Width)
+    for (const auto& pos : unit.Cells) {
+        if (pos.Row < 0 || pos.Row >= Height || pos.Col < 0 || pos.Col >= Width)
             return false;
-        if (Cells[pos.Row][pos.Column].State == ECellState::Filled)
+        if (Cells[pos.Row][pos.Col])
             return false;
     }
     return true;
 }
+
 void TBoard::LockUnit(const TUnit& unit) {
     assert(IsValidUnit(unit));
-    for (const auto& pos : unit.GetCells()) {
-        Cells[pos.Row][pos.Column].State = ECellState::Filled;
+    for (const auto& pos : unit.Cells) {
+        Cells[pos.Row][pos.Col] = true;
         FilledInRow[pos.Row]++;
     }
     RemoveFilled();

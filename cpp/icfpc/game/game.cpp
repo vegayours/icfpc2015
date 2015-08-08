@@ -7,21 +7,52 @@ folly::fbvector<folly::fbstring> MovesMap = {
     "lmno 5"
 };
 
-TUnit ApplyMove(EMove move, const TUnit& unit) {
-    switch (move) {
-        case MoveLeft:
-            return unit.MoveLeft();
-        case MoveRight:
-            return unit.MoveRight();
-        case MoveDownLeft:
-            return unit.MoveDownLeft();
-        case MoveDownRight:
-            return unit.MoveDownRight();
-        default:
-            fprintf(stderr, "Unknown move!\n");
-            assert(false);
-            break;
+char RandomLetter(EMove move) {
+    auto line = MovesMap[move];
+    return line[ rand() % line.size() ];
+}
+
+TMove::TMove() {}
+
+TMove::TMove(EMove move)
+    : Move(move)
+    , Letter(RandomLetter(move))
+{
+}
+
+TMove::TMove(EMove move, char letter)
+    : Move(move)
+    , Letter(letter)
+{
+}
+
+TGame::TGame(TBoard& board, TUnitStream& stream, IPlayer* player, IGameClient* client)
+    : Board(board)
+    , Stream(stream)
+    , Player(player)
+    , Client(client)
+{
+}
+
+TGame::~TGame()
+{
+}
+
+void TGame::Run() {
+    while (Stream.Next(CurrentUnit)) {
+        CurrentUnit = CurrentUnit.PlaceToBoard(Board);
+        if (!Board.IsValidUnit(CurrentUnit)) {
+            Client->OnPlacementFailed(CurrentUnit, Board);
+            return;
+        }
+        Client->OnInitialPlacement(CurrentUnit, Board);
+        Player->NextUnit(CurrentUnit);
+        TMove nextMove;
+        while (Player->NextMove(nextMove)) {
+            CurrentUnit = CurrentUnit.ApplyMove(nextMove.Move);
+            Client->OnMove(nextMove, CurrentUnit, Board);
+        }
+        Board.LockUnit(CurrentUnit);
+        Client->OnUnitLocked(nextMove, Board);
     }
-    assert(false);
-    return TUnit();
 }

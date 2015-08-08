@@ -1,3 +1,7 @@
+#pragma once
+
+#include "unit_stream.h"
+
 #include "common/unit.h"
 #include "common/board.h"
 
@@ -7,27 +11,46 @@
 #include <queue>
 #include <memory>
 
-enum EMove {
-    MoveLeft = 0,
-    MoveRight = 1,
-    MoveDownLeft = 2,
-    MoveDownRight = 3,
-
-    MoveCount
-};
 
 extern folly::fbvector<folly::fbstring> MovesMap;
+char RandomLetter(EMove move);
 
-TUnit ApplyMove(EMove move, const TUnit& unit);
+struct TMove {
+    EMove Move;
+    char Letter;
 
-class IGame {
-public:
-    virtual ~IGame() {}
-    virtual std::queue<EMove> MovesForUnit(const TUnit& unit, std::function<void(TUnit& current)> visitor) = 0;
+    TMove();
+    TMove(EMove move);
+    TMove(EMove move, char letter);
 };
 
-class IGameFactory {
+struct IPlayer {
+    virtual ~IPlayer() {}
+    virtual void NextUnit(const TUnit& unit) = 0;
+    // return true on normal move, false on lock
+    virtual bool NextMove(TMove& move) = 0;
+};
+
+struct IGameClient {
+    virtual ~IGameClient() {}
+    virtual void OnMove(TMove move, const TUnit& unit, const TBoard& board) = 0;
+    virtual void OnUnitLocked(TMove move, const TBoard&) = 0;
+    virtual void OnUnitStreamEnd(const TBoard&) {}
+    virtual void OnInitialPlacement(const TUnit&, const TBoard&) {}
+    virtual void OnPlacementFailed(const TUnit&, const TBoard&) {}
+};
+
+struct TGame {
 public:
-    virtual ~IGameFactory() {}
-    virtual std::unique_ptr<IGame> Create(TBoard& board) = 0;
+    TGame(TBoard& board, TUnitStream& stream, IPlayer* player, IGameClient* client);
+    ~TGame();
+
+    void Run();
+
+public:
+    TBoard& Board;
+    TUnit CurrentUnit;
+    TUnitStream& Stream;
+    IPlayer* const Player;
+    IGameClient* const Client;
 };

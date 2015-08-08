@@ -1,19 +1,19 @@
 #pragma once
 
-struct TCellPosition {
-    int Column;
+struct TCellPos {
+    int Col;
     int Row;
-    TCellPosition()
-        : Column(0)
+    TCellPos()
+        : Col(0)
         , Row(0)
     {}
-    TCellPosition(int x, int y)
-        : Column(x)
+    TCellPos(int x, int y)
+        : Col(x)
         , Row(y)
     {}
 };
 
-enum ECellState : char {
+enum ECellView : char {
     Empty  = '.',
     Filled = '#',
     Unit = 'o',

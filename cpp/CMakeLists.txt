@@ -4,7 +4,7 @@ project(icfpc)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake" ${CMAKE_MODULE_PATH})
 
-if (USE_DYNAMIC_FOLLY)
+if (NOT USE_STATIC_FOLLY)
     find_package(Folly REQUIRED)
 else()
     add_library(folly_static STATIC IMPORTED)

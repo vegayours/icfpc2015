@@ -1,15 +1,22 @@
+#pragma once
+
 #include "game.h"
 
 #include "common/board.h"
 #include "common/unit.h"
 
-#include <queue>
+#include <deque>
 
-class TStupidSolverFactory : public IGameFactory {
+class TStupidGamePlayer : public IPlayer {
 public:
-    TStupidSolverFactory();
-    ~TStupidSolverFactory() override;
-    std::unique_ptr<IGame> Create(TBoard& board) override final;
+    TStupidGamePlayer(const TBoard& board, bool startFromRight = true);
+    ~TStupidGamePlayer();
+
+    void NextUnit(const TUnit& unit) final;
+    bool NextMove(TMove& move) final;
+
 private:
+    const TBoard& Board;
+    std::deque<TMove> Moves;
     bool GoRight;
 };

@@ -8,44 +8,39 @@
 #include <algorithm>
 #include <functional>
 
-class TBoard;
+enum EMove {
+    MoveLeft = 0,
+    MoveRight = 1,
+    MoveDownLeft = 2,
+    MoveDownRight = 3,
 
-class TUnit {
+    MoveCount
+};
+
+struct TBoard;
+
+struct TUnit {
 public:
     TUnit();
-    TUnit(folly::fbvector<TCellPosition> cells, const TCellPosition& pivot);
+    TUnit(folly::fbvector<TCellPos> cells, const TCellPos& pivot);
     ~TUnit();
 
-    const folly::fbvector<TCellPosition>& GetCells() const {
-        return Cells;
-    }
-    const TCellPosition& GetPivot() const {
-        return Pivot;
-    }
-
-    int GetWidth() const {
-        return Width;
-    }
-
-    int GetHeight() const {
-        return Width;
-    }
-
-    TUnit PlaceToBoard(const TBoard& board);
-
+    TUnit PlaceToBoard(const TBoard& board) const;
+    TUnit ApplyMove(EMove move) const;
     TUnit MoveLeft() const;
     TUnit MoveRight() const;
     TUnit MoveDownLeft() const;
     TUnit MoveDownRight() const;
-private:
-    TUnit MoveUnit(int rowDiff, int colDiff) const;
-
-    TUnit MoveUnit(std::function<void(TCellPosition& pos)> move) const;
-
-private:
-    folly::fbvector<TCellPosition> Cells;
-    TCellPosition Pivot;
+public:
+    folly::fbvector<TCellPos> Cells;
+    TCellPos Pivot;
     int Width;
     int Height;
+private:
+
+    TUnit MoveUnit(int rowDiff, int colDiff) const;
+
+    TUnit MoveUnit(std::function<void(TCellPos& pos)> move) const;
+
 };
 

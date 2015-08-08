@@ -7,28 +7,34 @@
 using namespace folly;
 
 TBoardState CreateState(const TBoard& board) {
-    return TBoardState(board.GetHeight(), fbstring(2 * board.GetWidth() - 1, ' '));
+    return TBoardState(board.Height, fbstring(2 * board.Width - 1, ' '));
 }
 
-void ShowBoard(TBoardState& state, const TBoard& board, const TUnit* unit) {
-    for (int i = 0; i < board.GetHeight(); i++) {
-        for (int j = 0; j < board.GetWidth(); j++) {
-            state[i][2 * j] = board.CellData()[i][j].State;
+void ShowBoard(TBoardState& state, const TBoard& board, const TUnit* unit, bool showPivot) {
+    for (int i = 0; i < board.Height; i++) {
+        for (int j = 0; j < board.Width; j++) {
+            //state[i][2 * j] = board.Cells[i][j] ? ECellView::Filled : ECellView::Empty;
+            if (board.Cells[i][j]) {
+                state[i][2 * j] = ECellView::Filled;
+            }
+            else {
+                state[i][2 * j] = ECellView::Empty;
+            }
         }
     }
     if (unit) {
-        for (const auto& pos: unit->GetCells()) {
-            state[pos.Row][2 * pos.Column] = ECellState::Unit;
+        for (const auto& pos: unit->Cells) {
+            state[pos.Row][2 * pos.Col] = ECellView::Unit;
         }
-        /*
-        const auto& pivot = unit->GetPivot();
-        state[pivot.Row][2 * pivot.Column] = (state[pivot.Row][2 * pivot.Column] == ECellState::Unit)
-            ? ECellState::PivotUnit
-            : ECellState::Pivot;
-        */
+        if (showPivot) {
+            const auto& pivot = unit->Pivot;
+            state[pivot.Row][2 * pivot.Col] = (state[pivot.Row][2 * pivot.Col] == ECellView::Unit)
+                ? ECellView::PivotUnit
+                : ECellView::Pivot;
+        }
     }
 
-    fbstring head(2 * board.GetWidth() - 1, '=');
+    fbstring head(2 * board.Width - 1, '=');
     printf("%s\n", head.c_str());
 
     for (size_t rowIndex = 0; rowIndex < state.size(); rowIndex++) {

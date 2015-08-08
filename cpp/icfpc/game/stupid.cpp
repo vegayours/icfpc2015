@@ -2,113 +2,78 @@
 
 #include <cstdlib>
 
-enum ELastHorisontal {
-    LH_None,
-    LH_Left = 1,
-    LH_Right = 2
-};
+TStupidGamePlayer::TStupidGamePlayer(const TBoard& board, bool startFromRight)
+    : Board(board)
+    , Moves()
+    , GoRight(startFromRight)
+{
+}
 
-class TStupidSolver : public IGame {
-public:
-    TStupidSolver(TBoard& board, bool goRight = true)
-        : GoRight(goRight)
-        , LastHorisontal(LH_None)
-        , Board(board)
-    {
-    }
-    ~TStupidSolver() override {}
-    std::queue<EMove> MovesForUnit(const TUnit& unit, std::function<void(TUnit&)> visitor) override final {
-        TUnit current = unit;
-        std::queue<EMove> moves;
-        int defaultBudget = (Board.GetWidth() - unit.GetWidth());
-        int budget = defaultBudget + rand() % (defaultBudget);
-        while (true) {
-            if (GoRight) {
-                while (budget--) {
-                    if (Board.IsValidUnit(current.MoveDownRight())) {
-                        current = current.MoveDownRight();
-                        moves.push(MoveDownRight);
-                        LastHorisontal = LH_None;
-                        visitor(current);
-                    }
-                    else {
-                        break;
-                    }
+TStupidGamePlayer::~TStupidGamePlayer()
+{
+}
 
-                }
+void TStupidGamePlayer::NextUnit(const TUnit& unit) {
+    assert(Moves.empty());
+
+    int defaultBudget = Board.Width - unit.Width;
+    int budget = defaultBudget + rand() % (defaultBudget);
+    TMove nextMove;
+    TUnit next, current = unit;
+    while (true) {
+        while (budget--) {
+            nextMove = TMove(GoRight ? MoveDownRight : MoveDownLeft);
+            next = current.ApplyMove(nextMove.Move);
+            if (Board.IsValidUnit(next)) {
+                current = std::move(next);
+                Moves.emplace_back(std::move(nextMove));
             }
             else {
-                while(budget--) {
-                    if (Board.IsValidUnit(current.MoveDownLeft())) {
-                        current = current.MoveDownLeft();
-                        moves.push(MoveDownLeft);
-                        LastHorisontal = LH_None;
-                        visitor(current);
-                    }
-                    else {
-                        break;
-                    }
-
-                }
-            }
-            GoRight = !GoRight;
-            budget = 2 * defaultBudget - rand() %(defaultBudget);
-            if (!Board.IsValidUnit(current.MoveDownLeft()) && !Board.IsValidUnit(current.MoveDownRight())) {
-                if (LastHorisontal == LH_None) {
-                    if (Board.IsValidUnit(current.MoveLeft())) {
-                        LastHorisontal = LH_Left;
-                        current = current.MoveLeft();
-                        moves.push(MoveLeft);
-                        visitor(current);
-                    }
-                    else if (Board.IsValidUnit(current.MoveRight())) {
-                        LastHorisontal = LH_Right;
-                        current = current.MoveRight();
-                        moves.push(MoveRight);
-                        visitor(current);
-                    }
-                    else {
-                        moves.push(MoveDownLeft);
-                        Board.LockUnit(current);
-                        break;
-                    }
-                }
-                else if (LastHorisontal == LH_Left && Board.IsValidUnit(current.MoveLeft())) {
-                    current = current.MoveLeft();
-                    moves.push(MoveLeft);
-                    visitor(current);
-                }
-                else if (LastHorisontal == LH_Right && Board.IsValidUnit(current.MoveRight())) {
-                    current = current.MoveRight();
-                    moves.push(MoveRight);
-                    visitor(current);
-                }
-                else {
-                    moves.push(MoveDownLeft);
-                    Board.LockUnit(current);
-                    break;
-                }
+                break;
             }
         }
-        return std::move(moves);
+        GoRight = !GoRight;
+        bool hasValidMove = false;
+        if (!Board.IsValidUnit(current.MoveDownLeft()) && !Board.IsValidUnit(current.MoveDownRight())) {
+            if (Moves.empty() || (Moves.back().Move != MoveLeft && Moves.back().Move != MoveRight)) {
+                bool startLeft = rand() % 2;
+                EMove moves[] = {
+                    startLeft ? MoveLeft : MoveRight,
+                    startLeft ? MoveRight : MoveLeft
+                };
+                for (auto move : moves) {
+                    next = current.ApplyMove(move);
+                    if (Board.IsValidUnit(next)) {
+                        hasValidMove = true;
+                        current = next;
+                        Moves.emplace_back(move);
+                        break;
+                    }
+                }
+            }
+            else if (Moves.back().Move == MoveLeft && Board.IsValidUnit(current.MoveLeft())) {
+                hasValidMove = true;
+                current = current.MoveLeft();
+                Moves.emplace_back(MoveLeft);
+            }
+            else if (Moves.back().Move == MoveRight && Board.IsValidUnit(current.MoveRight())) {
+                hasValidMove = true;
+                current = current.MoveRight();
+                Moves.emplace_back(MoveRight);
+            }
+
+            if (!hasValidMove) {
+                Moves.push_back(TMove(MoveDownLeft));
+                return;
+            }
+        }
+        budget = 2 * defaultBudget - rand() %(defaultBudget);
     }
-private:
-    bool GoRight;
-    ELastHorisontal LastHorisontal;
-    TBoard& Board;
-    int UnitWidth;
-};
-
-TStupidSolverFactory::TStupidSolverFactory()
-    : GoRight(::rand() % 2)
-{
 }
 
-TStupidSolverFactory::~TStupidSolverFactory()
-{
-}
-
-std::unique_ptr<IGame> TStupidSolverFactory::Create(TBoard& board) {
-    GoRight = !GoRight;
-    return std::unique_ptr<IGame>(new TStupidSolver(board, GoRight));
+bool TStupidGamePlayer::NextMove(TMove& move) {
+    assert(!Moves.empty());
+    move = Moves.front();
+    Moves.pop_front();
+    return !Moves.empty();
 }

@@ -3,43 +3,23 @@
 #include "cell.h"
 #include "unit.h"
 
-#include <stdint.h>
-#include <cassert>
 #include <folly/FBVector.h>
 
+struct TUnit;
 
-struct TCell {
-    ECellState State;
-    TCell(ECellState state = Empty)
-        : State(state)
-    {
-    }
-};
-
-class TUnit;
-
-class TBoard {
+struct TBoard {
 public:
-    using TCellData = folly::fbvector<folly::fbvector<TCell>>;
+    using TCellData = folly::fbvector<folly::fbvector<bool>>;
 
-    TBoard(int width, int height, const folly::fbvector<TCellPosition>& filled = folly::fbvector<TCellPosition>());
+    TBoard(int width, int height, const folly::fbvector<TCellPos>& filled = folly::fbvector<TCellPos>());
     ~TBoard();
 
     bool IsValidUnit(const TUnit& unit) const;
     void LockUnit(const TUnit& unit);
-public:
-    const TCellData& CellData() const {
-        return Cells;
-    }
-    int GetWidth() const {
-         return Width;
-    }
-    int GetHeight() const {
-        return Height;
-    }
-private:
+
     void RemoveFilled();
-private:
+    void ShiftRow(int row);
+public:
     int Width;
     int Height;
     TCellData Cells;

@@ -8,7 +8,7 @@ TUnit::TUnit()
 {
 }
 
-TUnit::TUnit(folly::fbvector<TCellPosition> cells, const TCellPosition& pivot)
+TUnit::TUnit(folly::fbvector<TCellPos> cells, const TCellPos& pivot)
     : Cells(std::move(cells))
     , Pivot(pivot)
 {
@@ -16,8 +16,8 @@ TUnit::TUnit(folly::fbvector<TCellPosition> cells, const TCellPosition& pivot)
     int minCol = kLimit, minRow = kLimit;
     int maxCol = 0, maxRow = 0;
     for (const auto& c : Cells) {
-        minCol = std::min(minCol, c.Column);
-        maxCol = std::max(maxCol, c.Column);
+        minCol = std::min(minCol, c.Col);
+        maxCol = std::max(maxCol, c.Col);
         minRow = std::min(minRow, c.Row);
         maxRow = std::max(maxRow, c.Row);
     }
@@ -29,13 +29,30 @@ TUnit::~TUnit()
 {
 }
 
-TUnit TUnit::PlaceToBoard(const TBoard& board) {
-    int colShift = colShift = board.GetWidth() / 2 - Width / 2;
-    if (board.GetWidth() % 2 == 0 && Width % 2 == 1)
+TUnit TUnit::PlaceToBoard(const TBoard& board) const {
+    int colShift = colShift = board.Width / 2 - Width / 2;
+    if (board.Width % 2 == 0 && Width % 2 == 1)
     {
         colShift--;
     }
     return MoveUnit(0, colShift);
+}
+
+TUnit TUnit::ApplyMove(EMove move) const {
+    switch (move) {
+        case EMove::MoveLeft:
+            return MoveLeft();
+        case EMove::MoveRight:
+            return MoveRight();
+        case EMove::MoveDownLeft:
+            return MoveDownLeft();
+        case EMove::MoveDownRight:
+            return MoveDownRight();
+        default:
+            break;
+    }
+    assert(false);
+    return TUnit();
 }
 
 TUnit TUnit::MoveLeft() const {
@@ -45,27 +62,27 @@ TUnit TUnit::MoveRight() const {
     return MoveUnit(0, 1);
 }
 TUnit TUnit::MoveDownLeft() const {
-    return MoveUnit([] (TCellPosition& pos) {
+    return MoveUnit([] (TCellPos& pos) {
         if (pos.Row % 2 == 0)
-            pos.Column--;
+            pos.Col--;
         pos.Row++;
             });
 }
 TUnit TUnit::MoveDownRight() const {
-    return MoveUnit([] (TCellPosition& pos) {
+    return MoveUnit([] (TCellPos& pos) {
         if (pos.Row % 2 == 1)
-            pos.Column++;
+            pos.Col++;
         pos.Row++;
             });
 }
 TUnit TUnit::MoveUnit(int rowDiff, int colDiff) const {
-    return MoveUnit([=](TCellPosition& pos) {
+    return MoveUnit([=](TCellPos& pos) {
             pos.Row += rowDiff;
-            pos.Column += colDiff;
+            pos.Col += colDiff;
             });
 }
 
-TUnit TUnit::MoveUnit(std::function<void(TCellPosition& pos)> move) const {
+TUnit TUnit::MoveUnit(std::function<void(TCellPos& pos)> move) const {
     TUnit copy = *this;
     for (auto& c : copy.Cells) {
         move(c);
