@@ -38,7 +38,10 @@ public:
         return Height;
     }
 private:
+    void RemoveFilled();
+private:
     int Width;
     int Height;
     TCellData Cells;
+    folly::fbvector<int> FilledInRow;
 };

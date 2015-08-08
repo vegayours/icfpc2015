@@ -18,14 +18,16 @@ enum EMove {
 
 extern folly::fbvector<folly::fbstring> MovesMap;
 
+TUnit ApplyMove(EMove move, const TUnit& unit);
+
 class IGame {
 public:
     virtual ~IGame() {}
-    virtual std::queue<EMove> MovesForUnit(const TUnit& unit) = 0;
+    virtual std::queue<EMove> MovesForUnit(const TUnit& unit, std::function<void(TUnit& current)> visitor) = 0;
 };
 
 class IGameFactory {
 public:
     virtual ~IGameFactory() {}
-    virtual std::unique_ptr<IGame> Create(const TBoard& board) = 0;
+    virtual std::unique_ptr<IGame> Create(TBoard& board) = 0;
 };

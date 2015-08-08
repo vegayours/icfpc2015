@@ -15,14 +15,22 @@ fbstring RunBoard(TBoard board, TUnitStream& stream, IGameFactory& factory)
 {
     TUnit unit, next;
     fbstring commands;
+    int totalMoves = 0;
     while (stream.Next(unit)) {
-        auto moves = factory.Create(board)->MovesForUnit(unit);
+        unit = unit.PlaceToBoard(board);
+        if (!board.IsValidUnit(unit)) {
+            //printf("Total moves: %d\n", totalMoves);
+            return commands;
+        }
+        auto moves = factory.Create(board)->MovesForUnit(unit, [](TUnit&) {});
         while (!moves.empty()) {
             auto& line = MovesMap[moves.front()];
             commands.push_back(line[rand() % line.size()]);
+            totalMoves++;
             moves.pop();
         }
     }
+    //printf("Total moves: %d\n", totalMoves);
     return commands;
 }
 
@@ -47,7 +55,7 @@ int main(int argc, const char** argv) {
         dynamic solution = dynamic::object()
             ("problemId", to<int>(argv[2]))
             ("seed", seed)
-            ("tag", "not_so_stupid")
+            ("tag", "hopeless_fix")
             ("solution", commands);
         result.push_back(solution);
     }

@@ -9,7 +9,7 @@ class TStupidSolverFactory : public IGameFactory {
 public:
     TStupidSolverFactory();
     ~TStupidSolverFactory() override;
-    std::unique_ptr<IGame> Create(const TBoard& board) override final;
+    std::unique_ptr<IGame> Create(TBoard& board) override final;
 private:
     bool GoRight;
 };

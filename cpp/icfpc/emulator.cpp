@@ -22,49 +22,29 @@ using namespace folly;
 void RunBoard(TBoard board, TUnitStream& stream, IGameFactory& factory, int timeoutMs) {
     auto state = CreateState(board);
     TUnit unit, next;
+    int totalMoves = 0;
     while(stream.Next(unit)) {
         unit = unit.PlaceToBoard(board);
         if (!board.IsValidUnit(unit)) {
-            fprintf(stderr, "Unable to place next unit, game will end!\n");
+            fprintf(stderr, "Unable to place next unit, game will end( %d moves )!\n", totalMoves);
             ShowBoard(state, board, nullptr);
             return;
         }
         ShowBoard(state, board, &unit);
         std::unique_ptr<IGame> game = factory.Create(board);
-        std::queue<EMove> moves = game->MovesForUnit(unit);
-        while (!moves.empty()) {
-            auto move = moves.front();
-            moves.pop();
-            switch (move) {
-                case MoveLeft:
-                    next = unit.MoveLeft();
-                    break;
-                case MoveRight:
-                    next = unit.MoveRight();
-                    break;
-                case MoveDownLeft:
-                    next = unit.MoveDownLeft();
-                    break;
-                case MoveDownRight:
-                    next = unit.MoveDownRight();
-                    break;
-                default:
-                    fprintf(stderr, "Unknown move!\n");
-                    break;
-            }
-            if (!board.IsValidUnit(next)) {
-                fprintf(stderr, "Invalid move, will lock now!\n");
-                board.LockUnit(unit);
-                break;
-            }
-            else {
-                unit = std::move(next);
-            }
-            ShowBoard(state, board, &unit);
+        std::queue<EMove> moves = game->MovesForUnit(unit, [&] (TUnit& current) {
+            ShowBoard(state, board, &current);
             std::this_thread::sleep_for(std::chrono::milliseconds(timeoutMs));
+        });
+        totalMoves += moves.size();
+        printf("Moves: ");
+        while (!moves.empty()) {
+            printf("%c", 'a' + moves.front());
+            moves.pop();
         }
+        printf("\n");
     }
-    fprintf(stderr, "Unit stream end, final board:\n");
+    fprintf(stderr, "Unit stream end, final board (%d moves):\n", totalMoves);
     ShowBoard(state, board, nullptr);
 }
 

@@ -2,15 +2,22 @@
 
 #include <cstdlib>
 
+enum ELastHorisontal {
+    LH_None,
+    LH_Left = 1,
+    LH_Right = 2
+};
+
 class TStupidSolver : public IGame {
 public:
-    TStupidSolver(const TBoard& board, bool goRight = true)
+    TStupidSolver(TBoard& board, bool goRight = true)
         : GoRight(goRight)
+        , LastHorisontal(LH_None)
         , Board(board)
     {
     }
     ~TStupidSolver() override {}
-    std::queue<EMove> MovesForUnit(const TUnit& unit) override final {
+    std::queue<EMove> MovesForUnit(const TUnit& unit, std::function<void(TUnit&)> visitor) override final {
         TUnit current = unit;
         std::queue<EMove> moves;
         int defaultBudget = (Board.GetWidth() - unit.GetWidth());
@@ -21,6 +28,8 @@ public:
                     if (Board.IsValidUnit(current.MoveDownRight())) {
                         current = current.MoveDownRight();
                         moves.push(MoveDownRight);
+                        LastHorisontal = LH_None;
+                        visitor(current);
                     }
                     else {
                         break;
@@ -33,6 +42,8 @@ public:
                     if (Board.IsValidUnit(current.MoveDownLeft())) {
                         current = current.MoveDownLeft();
                         moves.push(MoveDownLeft);
+                        LastHorisontal = LH_None;
+                        visitor(current);
                     }
                     else {
                         break;
@@ -43,33 +54,48 @@ public:
             GoRight = !GoRight;
             budget = 2 * defaultBudget - rand() %(defaultBudget);
             if (!Board.IsValidUnit(current.MoveDownLeft()) && !Board.IsValidUnit(current.MoveDownRight())) {
-                moves.push(MoveDownRight);
-                break;
+                if (LastHorisontal == LH_None) {
+                    if (Board.IsValidUnit(current.MoveLeft())) {
+                        LastHorisontal = LH_Left;
+                        current = current.MoveLeft();
+                        moves.push(MoveLeft);
+                        visitor(current);
+                    }
+                    else if (Board.IsValidUnit(current.MoveRight())) {
+                        LastHorisontal = LH_Right;
+                        current = current.MoveRight();
+                        moves.push(MoveRight);
+                        visitor(current);
+                    }
+                    else {
+                        moves.push(MoveDownLeft);
+                        Board.LockUnit(current);
+                        break;
+                    }
+                }
+                else if (LastHorisontal == LH_Left && Board.IsValidUnit(current.MoveLeft())) {
+                    current = current.MoveLeft();
+                    moves.push(MoveLeft);
+                    visitor(current);
+                }
+                else if (LastHorisontal == LH_Right && Board.IsValidUnit(current.MoveRight())) {
+                    current = current.MoveRight();
+                    moves.push(MoveRight);
+                    visitor(current);
+                }
+                else {
+                    moves.push(MoveDownLeft);
+                    Board.LockUnit(current);
+                    break;
+                }
             }
         }
         return std::move(moves);
     }
-    /*
-     * p
-        int AvailHeight = Board.GetHeight();
-        int boardWidth = Board.GetWidth() + 1;
-        int unitWidth = unit.GetWidth() + 1;
-        int pass = (boardWidth + unitWidth) / 2  - 1;
-        int current = pass / 2 - (pass / 2) % (unitWidth / 2);
-        // initial pass from center
-        while (AvailHeight) {
-            for (int i = 0; i < 2 * current; i++) {
-                moves.push(GoRight ? MoveRightDown : MoveLeftDown);
-                if (!--AvailHeight)
-                    break;
-            }
-            GoRight = !GoRight;
-            current = pass - pass % (unitWidth / 2);
-        }
-        */
 private:
     bool GoRight;
-    const TBoard& Board;
+    ELastHorisontal LastHorisontal;
+    TBoard& Board;
     int UnitWidth;
 };
 
@@ -82,7 +108,7 @@ TStupidSolverFactory::~TStupidSolverFactory()
 {
 }
 
-std::unique_ptr<IGame> TStupidSolverFactory::Create(const TBoard& board) {
+std::unique_ptr<IGame> TStupidSolverFactory::Create(TBoard& board) {
     GoRight = !GoRight;
     return std::unique_ptr<IGame>(new TStupidSolver(board, GoRight));
 }
