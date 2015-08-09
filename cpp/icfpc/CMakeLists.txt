@@ -3,6 +3,7 @@ set(LIB_SRC
     common/unit.cpp
     game/game.cpp
     game/stupid.cpp
+    game/dfs_searcher.cpp
     game/unit_stream.cpp
     emulator/load.cpp
     emulator/show_board.cpp
