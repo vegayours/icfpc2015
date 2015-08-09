@@ -24,36 +24,39 @@ public:
         , DurationMs(timeoutMs)
     {
     }
-    virtual void OnMove(TMove move, const TUnit& unit, const TBoard& board)
-    {
+    void OnMove(TMove move, const TUnit& unit, const TBoard& board) final {
         Commands.push_back(move.Letter);
         ShowBoard(State, board, &unit);
         Wait();
     }
-    virtual void OnUnitLocked(TMove move, const TBoard& board) {
+    void OnUnitLocked(TMove move, const TBoard& board, int score) final {
         Commands.push_back(move.Letter);
-        printf("Unit locked, commands: %s\n", Commands.c_str());
+        printf("Unit locked, score: %d, commands: %s\n", score, Commands.c_str());
         Commands.clear();
         ShowBoard(State, board);
-        Wait();
+        Wait(5);
     }
-    virtual void OnUnitStreamEnd(const TBoard& board) {
+    void OnUnitStreamEnd(const TBoard& board) final {
         printf("Unit stream end, final board:\n");
         ShowBoard(State, board);
         Wait();
     }
-    virtual void OnInitialPlacement(const TUnit& unit, const TBoard& board) {
+    void OnInitialPlacement(const TUnit& unit, const TBoard& board) final {
         ShowBoard(State, board, &unit);
         Wait();
     }
-    virtual void OnPlacementFailed(const TUnit&, const TBoard& board) {
+    void OnPlacementFailed(const TUnit&, const TBoard& board) final {
         printf("Unit placement failed, final board: \n");
         ShowBoard(State, board);
         Wait();
     }
+    virtual void OnFinalScore(int score) final {
+        printf("Total game score: %d\n", score);
+        std::this_thread::sleep_for(std::chrono::seconds(2));
+    }
 private:
-    void Wait() {
-        std::this_thread::sleep_for(DurationMs);
+    void Wait(int mult = 1) {
+        std::this_thread::sleep_for(mult * DurationMs);
     }
 private:
     TBoardState State;

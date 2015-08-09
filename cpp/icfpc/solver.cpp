@@ -16,7 +16,7 @@ public:
     void OnMove(TMove move, const TUnit&, const TBoard&) final {
         Moves.push_back(move.Letter);
     }
-    void OnUnitLocked(TMove move, const TBoard&) final {
+    void OnUnitLocked(TMove move, const TBoard&, int) final {
         Moves.push_back(move.Letter);
     }
 public:

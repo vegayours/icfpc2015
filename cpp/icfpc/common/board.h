@@ -15,9 +15,10 @@ public:
     ~TBoard();
 
     bool IsValidUnit(const TUnit& unit) const;
-    void LockUnit(const TUnit& unit);
+    // returns lines cleared
+    int LockUnit(const TUnit& unit);
 
-    void RemoveFilled();
+    int RemoveFilled();
     void ShiftRow(int row);
 public:
     int Width;

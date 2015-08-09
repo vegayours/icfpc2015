@@ -34,10 +34,11 @@ struct IPlayer {
 struct IGameClient {
     virtual ~IGameClient() {}
     virtual void OnMove(TMove move, const TUnit& unit, const TBoard& board) = 0;
-    virtual void OnUnitLocked(TMove move, const TBoard&) = 0;
+    virtual void OnUnitLocked(TMove move, const TBoard&, int) = 0;
     virtual void OnUnitStreamEnd(const TBoard&) {}
     virtual void OnInitialPlacement(const TUnit&, const TBoard&) {}
     virtual void OnPlacementFailed(const TUnit&, const TBoard&) {}
+    virtual void OnFinalScore(int) {}
 };
 
 struct TGame {
@@ -47,10 +48,13 @@ public:
 
     void Run();
 
+    int UpdateScore(const TUnit&, int linesCleared);
 public:
     TBoard& Board;
     TUnit CurrentUnit;
     TUnitStream& Stream;
     IPlayer* const Player;
     IGameClient* const Client;
+    int LastLinesCleared;
+    int Score;
 };

@@ -19,7 +19,7 @@ TBoard::~TBoard()
 {
 }
 
-void TBoard::RemoveFilled() {
+int TBoard::RemoveFilled() {
     int filledCnt = 0;
     for (int row = Height - 1; row >= filledCnt;) {
         if (FilledInRow[row] == Width) {
@@ -36,6 +36,7 @@ void TBoard::RemoveFilled() {
         }
         FilledInRow[row] = 0;
     }
+    return filledCnt;
 }
 
 void TBoard::ShiftRow(int row) {
@@ -58,11 +59,11 @@ bool TBoard::IsValidUnit(const TUnit& unit) const {
     return true;
 }
 
-void TBoard::LockUnit(const TUnit& unit) {
+int TBoard::LockUnit(const TUnit& unit) {
     assert(IsValidUnit(unit));
     for (const auto& pos : unit.Cells) {
         Cells[pos.Row][pos.Col] = true;
         FilledInRow[pos.Row]++;
     }
-    RemoveFilled();
+    return RemoveFilled();
 }

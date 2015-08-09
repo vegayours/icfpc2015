@@ -31,6 +31,8 @@ TGame::TGame(TBoard& board, TUnitStream& stream, IPlayer* player, IGameClient* c
     , Stream(stream)
     , Player(player)
     , Client(client)
+    , LastLinesCleared(0)
+    , Score(0)
 {
 }
 
@@ -43,7 +45,7 @@ void TGame::Run() {
         CurrentUnit = CurrentUnit.PlaceToBoard(Board);
         if (!Board.IsValidUnit(CurrentUnit)) {
             Client->OnPlacementFailed(CurrentUnit, Board);
-            return;
+            break;
         }
         Client->OnInitialPlacement(CurrentUnit, Board);
         Player->NextUnit(CurrentUnit);
@@ -52,7 +54,18 @@ void TGame::Run() {
             CurrentUnit = CurrentUnit.ApplyMove(nextMove.Move);
             Client->OnMove(nextMove, CurrentUnit, Board);
         }
-        Board.LockUnit(CurrentUnit);
-        Client->OnUnitLocked(nextMove, Board);
+        int linesCleared = Board.LockUnit(CurrentUnit);
+        int score = UpdateScore(CurrentUnit, linesCleared);
+        Client->OnUnitLocked(nextMove, Board, score);
     }
+    Client->OnFinalScore(Score);
+}
+
+int TGame::UpdateScore(const TUnit& unit, int linesCleared) {
+    int score = unit.Cells.size() + 50 * (1 + linesCleared) * linesCleared;
+    if (LastLinesCleared > 1)
+        score += (LastLinesCleared - 1) * score / 10;
+    LastLinesCleared = linesCleared;
+    Score += score;
+    return score;
 }
