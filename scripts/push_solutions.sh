@@ -2,7 +2,7 @@
 
 DIR=$( cd "$( dirname "${BASH_SOURCE[0]}"  )" && pwd  )
 PROBLEMS_DIR="$DIR/../problems"
-BUILD_DIR="$DIR/../build"
+BUILD_DIR="$DIR/../release"
 
 for problem in $(ls $PROBLEMS_DIR/*.json); do
     echo $(basename $problem)
