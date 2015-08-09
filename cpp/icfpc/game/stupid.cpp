@@ -19,7 +19,7 @@ folly::fbstring TStupidGamePlayer::Name() {
 void TStupidGamePlayer::NextUnit(const TUnit& unit) {
     assert(Moves.empty());
 
-    int defaultBudget = Board.Width - unit.Width;
+    int defaultBudget = Board.Width - unit.Width();
     int budget = defaultBudget + rand() % (defaultBudget);
     TMove nextMove;
     TUnit next, current = unit;

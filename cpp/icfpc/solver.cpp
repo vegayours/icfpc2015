@@ -3,6 +3,7 @@
 #include "game/unit_stream.h"
 #include "game/game.h"
 #include "game/stupid.h"
+#include "game/dfs_searcher.h"
 
 #include <folly/FileUtil.h>
 #include <folly/json.h>
@@ -26,7 +27,7 @@ public:
 
 void RunBoard(TBoard& board, TUnitStream& stream, IGameClient* client)
 {
-    TStupidGamePlayer player(board);
+    TDfsSearcherPlayer player(board);
     TGame game(board, stream, &player, client);
     game.Run();
 }
@@ -53,7 +54,7 @@ int main(int argc, const char** argv) {
         dynamic solution = dynamic::object()
             ("problemId", to<int>(argv[2]))
             ("seed", seed)
-            ("tag", "stupid_refactoring")
+            ("tag", "stupid_dfs")
             ("solution", client.Moves);
         result.push_back(solution);
     }

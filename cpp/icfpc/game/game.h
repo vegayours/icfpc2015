@@ -22,6 +22,8 @@ struct TMove {
     TMove();
     TMove(EMove move);
     TMove(EMove move, char letter);
+
+    bool IsInverse(const EMove& move);
 };
 
 struct TPlayerBase {

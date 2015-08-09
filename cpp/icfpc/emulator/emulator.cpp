@@ -5,6 +5,7 @@
 #include "common/rnd_gen.h"
 #include "game/game.h"
 #include "game/stupid.h"
+#include "game/dfs_searcher.h"
 
 #include <folly/FileUtil.h>
 #include <folly/dynamic.h>
@@ -86,7 +87,7 @@ int main(int argc, const char** argv) {
     for (auto& seed : problem["sourceSeeds"]) {
         stream.Reset(seed.asInt(), limit);
         TBoard boardClone(board);
-        TStupidGamePlayer player(boardClone);
+        TDfsSearcherPlayer player(boardClone);
         RunBoard(boardClone, stream, &player, timeoutMs);
     }
     return 0;

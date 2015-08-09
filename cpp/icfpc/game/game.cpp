@@ -26,6 +26,12 @@ TMove::TMove(EMove move, char letter)
 {
 }
 
+bool TMove::IsInverse(const EMove& move) {
+    return
+        (Move == MoveLeft && move == MoveRight) ||
+        (Move == MoveRight && move == MoveLeft);
+}
+
 TPlayerBase::TPlayerBase(const TBoard& board)
     : Board(board)
 {

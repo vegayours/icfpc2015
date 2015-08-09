@@ -31,11 +31,16 @@ public:
     TUnit MoveRight() const;
     TUnit MoveDownLeft() const;
     TUnit MoveDownRight() const;
+
+    int MinRow() const;
+    int MaxRow() const;
+    int MinCol() const;
+    int MaxCol() const;
+    int Width() const;
+    int Height() const;
 public:
     folly::fbvector<TCellPos> Cells;
     TCellPos Pivot;
-    int Width;
-    int Height;
 private:
 
     TUnit MoveUnit(int rowDiff, int colDiff) const;

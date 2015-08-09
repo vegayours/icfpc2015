@@ -1,10 +1,10 @@
 #include "unit.h"
 
+#include <algorithm>
+
 TUnit::TUnit()
     : Cells()
     , Pivot()
-    , Width(0)
-    , Height(0)
 {
 }
 
@@ -12,17 +12,6 @@ TUnit::TUnit(folly::fbvector<TCellPos> cells, const TCellPos& pivot)
     : Cells(std::move(cells))
     , Pivot(pivot)
 {
-    const int kLimit = 10000000;
-    int minCol = kLimit, minRow = kLimit;
-    int maxCol = 0, maxRow = 0;
-    for (const auto& c : Cells) {
-        minCol = std::min(minCol, c.Col);
-        maxCol = std::max(maxCol, c.Col);
-        minRow = std::min(minRow, c.Row);
-        maxRow = std::max(maxRow, c.Row);
-    }
-    Width = maxCol - minCol + 1;
-    Height = maxRow - minRow + 1;
 }
 
 TUnit::~TUnit()
@@ -30,8 +19,9 @@ TUnit::~TUnit()
 }
 
 TUnit TUnit::PlaceToBoard(const TBoard& board) const {
-    int colShift = colShift = board.Width / 2 - Width / 2;
-    if (board.Width % 2 == 0 && Width % 2 == 1)
+    int width = Width();
+    int colShift = colShift = board.Width / 2 - width / 2;
+    if (board.Width % 2 == 0 && width % 2 == 1)
     {
         colShift--;
     }
@@ -89,4 +79,34 @@ TUnit TUnit::MoveUnit(std::function<void(TCellPos& pos)> move) const {
     }
     move(copy.Pivot);
     return std::move(copy);
+}
+
+int TUnit::MinRow() const {
+    return std::accumulate(Cells.begin() + 1, Cells.end(), Cells.begin()->Row,
+            [] (int x, const TCellPos y) {return std::min(x, y.Row);});
+}
+
+
+int TUnit::MaxRow() const {
+    return std::accumulate(Cells.begin() + 1, Cells.end(), Cells.begin()->Row,
+            [] (int x, const TCellPos y) {return std::max(x, y.Row);});
+}
+
+int TUnit::MinCol() const {
+    return std::accumulate(Cells.begin() + 1, Cells.end(), Cells.begin()->Col,
+            [] (int x, const TCellPos y) {return std::min(x, y.Col);});
+}
+
+
+int TUnit::MaxCol() const {
+    return std::accumulate(Cells.begin() + 1, Cells.end(), Cells.begin()->Col,
+            [] (int x, const TCellPos y) {return std::max(x, y.Col);});
+}
+
+int TUnit::Width() const {
+    return MaxCol() - MinCol() + 1;
+}
+
+int TUnit::Height() const {
+    return MaxRow() - MinRow() + 1;
 }
