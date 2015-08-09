@@ -24,11 +24,16 @@ struct TMove {
     TMove(EMove move, char letter);
 };
 
-struct IPlayer {
-    virtual ~IPlayer() {}
+struct TPlayerBase {
+    TPlayerBase(const TBoard& board);
+    virtual ~TPlayerBase();
     virtual void NextUnit(const TUnit& unit) = 0;
     // return true on normal move, false on lock
-    virtual bool NextMove(TMove& move) = 0;
+    virtual bool NextMove(TMove& move);
+    virtual folly::fbstring Name() = 0;
+protected:
+    const TBoard& Board;
+    std::deque<TMove> Moves;
 };
 
 struct IGameClient {
@@ -43,7 +48,7 @@ struct IGameClient {
 
 struct TGame {
 public:
-    TGame(TBoard& board, TUnitStream& stream, IPlayer* player, IGameClient* client);
+    TGame(TBoard& board, TUnitStream& stream, TPlayerBase* player, IGameClient* client);
     ~TGame();
 
     void Run();
@@ -53,7 +58,7 @@ public:
     TBoard& Board;
     TUnit CurrentUnit;
     TUnitStream& Stream;
-    IPlayer* const Player;
+    TPlayerBase* const Player;
     IGameClient* const Client;
     int LastLinesCleared;
     int Score;

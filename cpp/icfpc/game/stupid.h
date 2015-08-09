@@ -5,18 +5,15 @@
 #include "common/board.h"
 #include "common/unit.h"
 
-#include <deque>
-
-class TStupidGamePlayer : public IPlayer {
+class TStupidGamePlayer : public TPlayerBase {
 public:
     TStupidGamePlayer(const TBoard& board, bool startFromRight = true);
-    ~TStupidGamePlayer();
+    ~TStupidGamePlayer() override;
 
     void NextUnit(const TUnit& unit) final;
-    bool NextMove(TMove& move) final;
+
+    folly::fbstring Name() final;
 
 private:
-    const TBoard& Board;
-    std::deque<TMove> Moves;
     bool GoRight;
 };

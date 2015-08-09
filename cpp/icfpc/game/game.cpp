@@ -26,7 +26,23 @@ TMove::TMove(EMove move, char letter)
 {
 }
 
-TGame::TGame(TBoard& board, TUnitStream& stream, IPlayer* player, IGameClient* client)
+TPlayerBase::TPlayerBase(const TBoard& board)
+    : Board(board)
+{
+}
+
+TPlayerBase::~TPlayerBase()
+{
+}
+
+bool TPlayerBase::NextMove(TMove& move) {
+    assert(!Moves.empty());
+    move = Moves.front();
+    Moves.pop_front();
+    return !Moves.empty();
+}
+
+TGame::TGame(TBoard& board, TUnitStream& stream, TPlayerBase* player, IGameClient* client)
     : Board(board)
     , Stream(stream)
     , Player(player)

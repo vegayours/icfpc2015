@@ -3,14 +3,17 @@
 #include <cstdlib>
 
 TStupidGamePlayer::TStupidGamePlayer(const TBoard& board, bool startFromRight)
-    : Board(board)
-    , Moves()
+    : TPlayerBase(board)
     , GoRight(startFromRight)
 {
 }
 
 TStupidGamePlayer::~TStupidGamePlayer()
 {
+}
+
+folly::fbstring TStupidGamePlayer::Name() {
+    return "stupid_refactored";
 }
 
 void TStupidGamePlayer::NextUnit(const TUnit& unit) {
@@ -69,11 +72,4 @@ void TStupidGamePlayer::NextUnit(const TUnit& unit) {
         }
         budget = 2 * defaultBudget - rand() %(defaultBudget);
     }
-}
-
-bool TStupidGamePlayer::NextMove(TMove& move) {
-    assert(!Moves.empty());
-    move = Moves.front();
-    Moves.pop_front();
-    return !Moves.empty();
 }

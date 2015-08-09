@@ -53,7 +53,7 @@ int main(int argc, const char** argv) {
         dynamic solution = dynamic::object()
             ("problemId", to<int>(argv[2]))
             ("seed", seed)
-            ("tag", "refactoring")
+            ("tag", "stupid_refactoring")
             ("solution", client.Moves);
         result.push_back(solution);
     }

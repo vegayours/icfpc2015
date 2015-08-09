@@ -64,7 +64,7 @@ private:
     fbstring Commands;
 };
 
-void RunBoard(TBoard& board, TUnitStream& stream, IPlayer* player, int timeoutMs) {
+void RunBoard(TBoard& board, TUnitStream& stream, TPlayerBase* player, int timeoutMs) {
     TEmulatorGameClient client(board, timeoutMs);
     TGame game(board, stream, player, &client);
     game.Run();
