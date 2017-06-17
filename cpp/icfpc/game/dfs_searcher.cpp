@@ -75,9 +75,40 @@ void TDfsSearcherPlayer::UpdateProfit(const TUnit& unit, EMove lockMove) {
     }
 }
 
+static int LineProfit(const TUnit& unit, const TBoard& board) {
+    auto lines = board.FilledInRow;
+    int cnt = 0;
+    for (auto& c : unit.Cells) {
+        if (++lines[c.Row] == board.Width)
+            cnt++;
+    }
+    return cnt * (cnt + 1) * board.Width;
+}
+
+static int HolePenalty(const TUnit& unit, const TBoard& board) {
+    TBoard copy(board);
+    int holes = 0;
+    if (copy.LockUnit(unit) == 0) {
+        for (auto& c : unit.Cells) {
+            if (c.Row < board.Height - 1) {
+                TCellPos left(c.Row % 2 == 0 ? c.Col - 1 : c.Col, c.Row + 1);
+                TCellPos right(c.Row % 2 == 1 ? c.Col + 1 : c.Col, c.Row + 1);
+                if (left.Col >= 0 && copy.Cells[left.Row][left.Col] == false)
+                    holes++;
+                if (right.Col < board.Width && copy.Cells[right.Row][right.Col] == false)
+                    holes++;
+            }
+        }
+        return holes;
+    }
+    return 0;
+}
+
 int TDfsSearcherPlayer::CountProfit(const TUnit& unit) {
-    int profit = unit.MinRow() * Board.Width;
+    int profit = unit.MaxRow() * Board.Width;
     profit += std::max(unit.MinCol(), Board.Width - 1 - unit.MaxCol());
+    profit += LineProfit(unit, Board);
+    profit -= HolePenalty(unit, Board);
     return profit;
 }
 
