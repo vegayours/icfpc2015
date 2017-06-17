@@ -1,4 +1,11 @@
-pushd build
+#!/bin/bash
+
+if [ ! -d debug ]
+then
+    mkdir debug
+fi
+pushd debug
+
 if [ ! -f CMakeCache.txt ]; then
     cmake -DCMAKE_BUILD_TYPE=Debug ../cpp
 fi
